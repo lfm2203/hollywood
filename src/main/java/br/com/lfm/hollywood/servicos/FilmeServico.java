@@ -1,8 +1,7 @@
 package br.com.lfm.hollywood.servicos;
 
-import br.com.lfm.hollywood.modelo.entidades.Filme;
-import br.com.lfm.hollywood.modelo.repositorios.FilmeRepositorio;
-import jakarta.persistence.EntityManager;
+import br.com.lfm.hollywood.modelos.entidades.Filme;
+import br.com.lfm.hollywood.modelos.repositorios.FilmeRepositorio;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

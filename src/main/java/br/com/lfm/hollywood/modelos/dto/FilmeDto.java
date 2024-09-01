@@ -1,4 +1,4 @@
-package br.com.lfm.hollywood.modelo.dto;
+package br.com.lfm.hollywood.modelos.dto;
 
 import lombok.Data;
 

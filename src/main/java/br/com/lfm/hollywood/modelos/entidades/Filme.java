@@ -1,4 +1,4 @@
-package br.com.lfm.hollywood.modelo.entidades;
+package br.com.lfm.hollywood.modelos.entidades;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -19,12 +19,6 @@ public class Filme {
 
     @Column(name = "DS_TITULO")
     private String dsTitulo;
-
-    @Column(name = "DS_ESTUDIO")
-    private String dsEstudio;
-
-    @Column(name = "DS_PRODUTOR")
-    private String dsProdutor;
 
     @Column(name = "TP_VENCEDOR", length = 1)
     private String tpVencedor;

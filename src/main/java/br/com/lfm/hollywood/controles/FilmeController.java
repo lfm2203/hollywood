@@ -1,7 +1,6 @@
-package br.com.lfm.hollywood.api;
+package br.com.lfm.hollywood.controles;
 
-import br.com.lfm.hollywood.modelo.dto.FilmeDto;
-import br.com.lfm.hollywood.modelo.entidades.Filme;
+import br.com.lfm.hollywood.modelos.entidades.Filme;
 import br.com.lfm.hollywood.servicos.FilmeServico;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
