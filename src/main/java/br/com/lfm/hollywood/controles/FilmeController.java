@@ -1,5 +1,6 @@
 package br.com.lfm.hollywood.controles;
 
+import br.com.lfm.hollywood.modelos.dto.IntervaloPremioDto;
 import br.com.lfm.hollywood.modelos.entidades.Filme;
 import br.com.lfm.hollywood.servicos.FilmeServico;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,5 +22,10 @@ public class FilmeController {
     @GetMapping("/listar")
     public List<Filme> listar() {
         return filmeServico.listarTodos();
+    }
+
+    @GetMapping("/listarProdutoresPorIntervalo")
+    public IntervaloPremioDto obterProdutoresPorIntervaloPremio() {
+        return filmeServico.obterProdutoresPorIntervaloPremio();
     }
 }

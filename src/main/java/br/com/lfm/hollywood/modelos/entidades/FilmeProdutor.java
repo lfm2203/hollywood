@@ -1,5 +1,6 @@
 package br.com.lfm.hollywood.modelos.entidades;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,6 +19,7 @@ public class FilmeProdutor {
     @JoinColumn(name = "ID_FILME")
     private Filme filme;
 
-    @Column(name = "NM_PRODUTOR")
-    private String nmProdutor;
+    @ManyToOne
+    @JoinColumn(name = "ID_PRODUTOR")
+    private Produtor produtor;
 }

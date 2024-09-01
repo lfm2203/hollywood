@@ -9,16 +9,11 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class FilmeEstudio {
+public class Produtor {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne
-    @JoinColumn(name = "ID_FILME")
-    private Filme filme;
-
-    @ManyToOne
-    @JoinColumn(name = "ID_ESTUDIO")
-    private Estudio estudio;
+    @Column(name = "NM_PRODUTOR")
+    private String nmProdutor;
 }

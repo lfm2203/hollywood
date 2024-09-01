@@ -1,17 +1,12 @@
 package br.com.lfm.hollywood.configuracao;
 
-import br.com.lfm.hollywood.modelos.entidades.Filme;
-import br.com.lfm.hollywood.modelos.entidades.FilmeEstudio;
-import br.com.lfm.hollywood.modelos.entidades.FilmeProdutor;
-import br.com.lfm.hollywood.modelos.repositorios.FilmeEstudioRepositorio;
-import br.com.lfm.hollywood.modelos.repositorios.FilmeProdutorRepositorio;
-import br.com.lfm.hollywood.modelos.repositorios.FilmeRepositorio;
+import br.com.lfm.hollywood.modelos.entidades.*;
+import br.com.lfm.hollywood.modelos.repositorios.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
-import java.util.Arrays;
 import java.util.Objects;
 
 @Component
@@ -20,24 +15,70 @@ public class DadosRunner implements CommandLineRunner {
     FilmeRepositorio filmeRepositorio;
 
     @Autowired
+    ProdutorRepositorio produtorRepositorio;
+
+    @Autowired
+    EstudioRepositorio estudioRepositorio;
+
+    @Autowired
     FilmeEstudioRepositorio filmeEstudioRepositorio;
 
     @Autowired
     FilmeProdutorRepositorio filmeProdutorRepositorio;
 
-    private void adicionarProdutor(Filme filme, String nome) {
-        FilmeProdutor produtor = new FilmeProdutor();
-        produtor.setFilme(filme);
-        produtor.setNmProdutor(nome.trim().replace("and ", ""));
-        filmeProdutorRepositorio.save(produtor);
+    private Filme adicionarFilme(String[] registro) {
+        Filme filme = new Filme();
+        filme.setVlAno(Integer.parseInt(registro[0]));
+        filme.setDsTitulo(registro[1]);
+        filme.setTpVencedor((registro.length == 5 && Objects.equals(registro[4].trim().toLowerCase(), "yes")) ? "S" : "N");
+        return filmeRepositorio.save(filme);
     }
 
+    private void adicionarEstudio(Filme filme, String nome) {
+        String nmEstudio = nome.trim();
+        Estudio estudio = estudioRepositorio.findByNmEstudio(nmEstudio);
+        if (estudio == null) {
+            estudio = new Estudio();
+            estudio.setNmEstudio(nmEstudio);
+            estudio = estudioRepositorio.save(estudio);
+        }
+
+        adicionarFilmeEstudio(filme, estudio);
+    }
+
+    private void adicionarFilmeEstudio(Filme filme, Estudio estudio) {
+        FilmeEstudio filmeEstudio = new FilmeEstudio();
+        filmeEstudio.setFilme(filme);
+        filmeEstudio.setEstudio(estudio);
+        filmeEstudioRepositorio.save(filmeEstudio);
+    }
+
+    private void adicionarProdutor(Filme filme, String nome) {
+        String nmProdutor = nome.trim().replace("and ", "");
+        Produtor produtor = produtorRepositorio.findByNmProdutor(nmProdutor);
+        if (produtor == null) {
+            produtor = new Produtor();
+            produtor.setNmProdutor(nmProdutor);
+            produtor = produtorRepositorio.save(produtor);
+        }
+
+        adicionarFilmeProdutor(filme, produtor);
+    }
+
+    private void adicionarFilmeProdutor(Filme filme, Produtor produtor) {
+        FilmeProdutor filmeProdutor = new FilmeProdutor();
+        filmeProdutor.setFilme(filme);
+        filmeProdutor.setProdutor(produtor);
+        filmeProdutorRepositorio.save(filmeProdutor);
+    }
+
+
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
         InputStream inputStream = getClass().getResourceAsStream("/dados/movielist.csv");
         if (inputStream == null) return;
 
-        String linha = "";
+        String linha;
         BufferedReader br = null;
 
         try {
@@ -47,21 +88,15 @@ public class DadosRunner implements CommandLineRunner {
 
             while ((linha = br.readLine()) != null) {
                 String[] registro = linha.split(";");
+                if (registro.length < 2) continue;
 
-                Filme filme = new Filme();
-                filme.setVlAno(Integer.parseInt(registro[0]));
-                filme.setDsTitulo(registro[1]);
-                filme.setTpVencedor((registro.length == 5 && Objects.equals(registro[4].trim().toLowerCase(), "yes")) ? "S" : "N");
-                filmeRepositorio.save(filme);
+                Filme filme = adicionarFilme(registro);
 
                 if (registro.length < 3) continue;
 
                 String[] estudios = registro[2].split(",");
                 for (String e : estudios) {
-                    FilmeEstudio estudio = new FilmeEstudio();
-                    estudio.setFilme(filme);
-                    estudio.setNmEstudio(e.trim());
-                    filmeEstudioRepositorio.save(estudio);
+                    adicionarEstudio(filme, e);
                 }
 
                 if (registro.length < 4) continue;
