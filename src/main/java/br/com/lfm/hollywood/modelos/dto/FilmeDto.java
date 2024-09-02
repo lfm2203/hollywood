@@ -6,7 +6,5 @@ import lombok.Data;
 public class FilmeDto {
     private Integer vlAno;
     private String dsTitulo;
-    private String dsEstudio;
-    private String dsProdutor;
-    private boolean tpVencedor;
+    private String tpVencedor;
 }

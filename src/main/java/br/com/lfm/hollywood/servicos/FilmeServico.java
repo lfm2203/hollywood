@@ -1,5 +1,6 @@
 package br.com.lfm.hollywood.servicos;
 
+import br.com.lfm.hollywood.modelos.dto.FilmeDto;
 import br.com.lfm.hollywood.modelos.dto.IntervaloPremioDto;
 import br.com.lfm.hollywood.modelos.dto.ProdutorVencedorDto;
 import br.com.lfm.hollywood.modelos.entidades.Filme;
@@ -11,67 +12,68 @@ import br.com.lfm.hollywood.modelos.repositorios.ProdutorRepositorio;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class FilmeServico {
     @Autowired
     FilmeRepositorio filmeRepositorio;
 
-    @Autowired
-    ProdutorRepositorio produtorRepositorio;
-
-    @Autowired
-    FilmeProdutorRepositorio filmeProdutorRepositorio;
-
-
-    private List<Filme> obterFilmesVencedoresPorProdutor(Produtor produtor) {
-        List<FilmeProdutor> filmes = filmeProdutorRepositorio.obterFilmesVencedoresPorProdutor(produtor.getId());
-        return filmes.stream().map(FilmeProdutor::getFilme).toList();
+    public List<Filme> listarTodos() {
+        return filmeRepositorio.findAll();
     }
 
-    private List<ProdutorVencedorDto> obterProdutoresVencedores() {
-        List<ProdutorVencedorDto> retorno = new ArrayList<>();
+    public Optional<Filme> listarPorId(Integer id) {
+        return filmeRepositorio.findById(id);
+    }
 
-        List<Produtor> produtores = produtorRepositorio.findAll();
-        for (Produtor produtor : produtores) {
-            List<Filme> filmesDoProdutor = obterFilmesVencedoresPorProdutor(produtor);
-            if  (filmesDoProdutor.isEmpty() || filmesDoProdutor.size() < 2) continue;
-
-            List<Integer> anos = new ArrayList<>(filmesDoProdutor.stream().map(Filme::getVlAno).toList());
-
-            //anos.add(2001);
-
-            for (int x = 0; x<anos.size(); x++) {
-                if (x+1 >= anos.size()) continue;
-
-                ProdutorVencedorDto produtorVencedor = new ProdutorVencedorDto();
-                produtorVencedor.setProducer(produtor.getNmProdutor());
-                produtorVencedor.setPreviousWin(anos.get(x));
-                produtorVencedor.setFollowingWin(anos.get(x+1));
-                produtorVencedor.setInterval(anos.get(x+1) - anos.get(x));
-                retorno.add(produtorVencedor);
-            }
+    public List<String> validarFilme(FilmeDto filme) {
+        List<String> retorno = new ArrayList<>();
+        if (filme.getVlAno() == null) {
+            retorno.add("Campo ano não informado");
+        }
+        if (filme.getVlAno() != null && filme.getVlAno() <= 0) {
+            retorno.add("Campo ano com formato inválido");
+        }
+        if (filme.getDsTitulo() == null || filme.getDsTitulo().isEmpty()) {
+            retorno.add("Campo título não informado");
+        }
+        if (!Objects.equals(filme.getTpVencedor(), "S") && !Objects.equals(filme.getTpVencedor(), "N")) {
+            retorno.add("Campo vencedor com faixa incorreta, aceitável: S ou N");
         }
 
         return retorno;
     }
 
-    public List<Filme> listarTodos() {
-        return filmeRepositorio.findAll();
+    public Filme salvarFilme(FilmeDto novoFilme) throws Exception {
+        Filme filme = new Filme();
+        filme.setVlAno(novoFilme.getVlAno());
+        filme.setDsTitulo(novoFilme.getDsTitulo());
+        filme.setTpVencedor(novoFilme.getTpVencedor() != null && !novoFilme.getTpVencedor().isEmpty() ?
+                novoFilme.getTpVencedor() : "N");
+        return filmeRepositorio.save(filme);
     }
 
-    public IntervaloPremioDto obterProdutoresPorIntervaloPremio() {
-        IntervaloPremioDto retorno = new IntervaloPremioDto();
-        List<ProdutorVencedorDto> produtores = obterProdutoresVencedores();
+    public Filme atualizarFilme(Integer id, FilmeDto filmeAtualizado) {
+        Optional<Filme> filmeObtido = filmeRepositorio.findById(id);
+        if (filmeObtido.isEmpty()) return null;
 
-        List<ProdutorVencedorDto> maiorIntervalo = produtores.stream().max(Comparator.comparingInt(ProdutorVencedorDto::getInterval)).stream().toList();
-        List<ProdutorVencedorDto> menorIntervalo = produtores.stream().min(Comparator.comparingInt(ProdutorVencedorDto::getInterval)).stream().toList();
-        retorno.setMax(maiorIntervalo);
-        retorno.setMin(menorIntervalo);
+        Filme filme = filmeObtido.get();
+        filme.setVlAno(filmeAtualizado.getVlAno());
+        if (filmeAtualizado.getDsTitulo() != null && !filmeAtualizado.getDsTitulo().isEmpty()) {
+            filme.setDsTitulo(filmeAtualizado.getDsTitulo());
+        }
+        if (filmeAtualizado.getTpVencedor() != null && !filmeAtualizado.getTpVencedor().isEmpty()) {
+            filme.setTpVencedor(filmeAtualizado.getTpVencedor());
+        }
+        return filmeRepositorio.save(filme);
+    }
 
-        return retorno;
+    public boolean excluirFilme(Integer id) {
+        if (!filmeRepositorio.existsById(id)) {
+            return false;
+        }
+        filmeRepositorio.deleteById(id);
+        return true;
     }
 }
