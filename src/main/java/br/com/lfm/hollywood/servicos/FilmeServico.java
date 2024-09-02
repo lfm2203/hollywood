@@ -1,14 +1,12 @@
 package br.com.lfm.hollywood.servicos;
 
+import br.com.lfm.hollywood.modelos.dto.EstudioDto;
 import br.com.lfm.hollywood.modelos.dto.FilmeDto;
-import br.com.lfm.hollywood.modelos.dto.IntervaloPremioDto;
-import br.com.lfm.hollywood.modelos.dto.ProdutorVencedorDto;
+import br.com.lfm.hollywood.modelos.dto.ProdutorDto;
+import br.com.lfm.hollywood.modelos.entidades.Estudio;
 import br.com.lfm.hollywood.modelos.entidades.Filme;
-import br.com.lfm.hollywood.modelos.entidades.FilmeProdutor;
 import br.com.lfm.hollywood.modelos.entidades.Produtor;
-import br.com.lfm.hollywood.modelos.repositorios.FilmeProdutorRepositorio;
 import br.com.lfm.hollywood.modelos.repositorios.FilmeRepositorio;
-import br.com.lfm.hollywood.modelos.repositorios.ProdutorRepositorio;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +16,18 @@ import java.util.*;
 public class FilmeServico {
     @Autowired
     FilmeRepositorio filmeRepositorio;
+
+    @Autowired
+    EstudioServico estudioServico;
+
+    @Autowired
+    FilmeEstudioServico filmeEstudioServico;
+
+    @Autowired
+    ProdutorServico produtorServico;
+
+    @Autowired
+    FilmeProdutorServico filmeProdutorServico;
 
     public List<Filme> listarTodos() {
         return filmeRepositorio.findAll();
@@ -41,8 +51,28 @@ public class FilmeServico {
         if (!Objects.equals(filme.getTpVencedor(), "S") && !Objects.equals(filme.getTpVencedor(), "N")) {
             retorno.add("Campo vencedor com faixa incorreta, aceitável: S ou N");
         }
+        if  (filme.getEstudios() == null || filme.getEstudios().isEmpty()) {
+            retorno.add("Para adicionar um filme é necessário informar ao menos um estúdio");
+        }
+        if  (filme.getProdutores() == null || filme.getProdutores().isEmpty()) {
+            retorno.add("Para adicionar um filme é necessário informar ao menos um produtor");
+        }
 
         return retorno;
+    }
+
+    private void salvarEstudiosFilme(Filme filme, List<EstudioDto> estudios) {
+        for (EstudioDto novoEstudio : estudios) {
+            Estudio estudio = estudioServico.salvarEstudio(novoEstudio);
+            filmeEstudioServico.salvarEstudioFilme(filme, estudio);
+        }
+    }
+
+    private void salvarProdutoresFilme(Filme filme, List<ProdutorDto> produtores) {
+        for (ProdutorDto novoProdutor : produtores) {
+            Produtor produtor = produtorServico.salvarProdutor(novoProdutor);
+            filmeProdutorServico.salvarProdutorFilme(filme, produtor);
+        }
     }
 
     public Filme salvarFilme(FilmeDto novoFilme) throws Exception {
@@ -51,7 +81,11 @@ public class FilmeServico {
         filme.setDsTitulo(novoFilme.getDsTitulo());
         filme.setTpVencedor(novoFilme.getTpVencedor() != null && !novoFilme.getTpVencedor().isEmpty() ?
                 novoFilme.getTpVencedor() : "N");
-        return filmeRepositorio.save(filme);
+        filme = filmeRepositorio.save(filme);
+        salvarEstudiosFilme(filme, novoFilme.getEstudios());
+        salvarProdutoresFilme(filme, novoFilme.getProdutores());
+
+        return filme;
     }
 
     public Filme atualizarFilme(Integer id, FilmeDto filmeAtualizado) {
