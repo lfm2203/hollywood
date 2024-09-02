@@ -24,7 +24,7 @@ Ex: http://localhost:8081/hollywood/api
 - DELETE /filme/{id do filme}: Deleta um filme específico
 - GET /vencedores/listarPorIntervalo: Obtém o produtor com maior e menor intervalo (objetivo principal do exercício)
 
-Está disponibilizado, na raiz do projeto, uma collection do PostMan com todos os métodos e seus respectivos exemplos
+Está disponibilizado, na raiz do projeto, uma collection do PostMan com todos os métodos e seus respectivos exemplos (Hollywood.postman_collection.json)
 
 ### Execução dos testes ###
 
